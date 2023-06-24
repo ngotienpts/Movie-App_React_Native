@@ -15,7 +15,7 @@ import {
 
 import { styles } from "../theme";
 import TrendingMovies from "../components/TrendingMovies";
-import MovieLList from "../components/MovieLList";
+import MovieList from "../components/MovieList";
 
 const ios = Platform.OS == "ios";
 const HomeScreen = () => {
@@ -54,8 +54,11 @@ const HomeScreen = () => {
                 {/* trending movies carousel */}
                 <TrendingMovies data={trending} />
 
-                {/* upcoming */}
-                <MovieLList title="Upcoming" data={upcoming} />
+                {/* upcoming movies row */}
+                <MovieList title="Upcoming" data={upcoming} />
+
+                {/* top rated movies row */}
+                <MovieList title="Top Rated" data={topRated} />
             </ScrollView>
         </View>
     );
