@@ -13,18 +13,20 @@ import { Dimensions } from "react-native";
 
 var { width, height } = Dimensions.get("window");
 
-const MovieList = ({ title, data }) => {
+const MovieList = ({ title, data,hideSeeAll }) => {
     let moviName = "Ant-Man and the Wasp: Quantumania";
     const navigation = useNavigation();
     return (
         <View className="mb-4 space-y-4">
             <View className="mx-4 flex-row items-center justify-between">
                 <Text className="text-white text-xl">{title}</Text>
-                <TouchableOpacity>
-                    <Text className="text-lg" style={styles.text}>
-                        See All
-                    </Text>
-                </TouchableOpacity>
+                {!hideSeeAll && (
+                    <TouchableOpacity>
+                        <Text className="text-lg" style={styles.text}>
+                            See All
+                        </Text>
+                    </TouchableOpacity>
+                )}
             </View>
             {/* movie row */}
             <ScrollView
@@ -36,7 +38,7 @@ const MovieList = ({ title, data }) => {
                     return (
                         <TouchableWithoutFeedback
                             key={index}
-                            onPress={() => navigation("Movie", item)}
+                            onPress={() => navigation.push("Movie", item)}
                         >
                             <View className="space-y-1 mr-4">
                                 <Image
