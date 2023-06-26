@@ -15,7 +15,9 @@ import { HeartIcon } from "react-native-heroicons/solid";
 import { styles, theme } from "../theme";
 import { LinearGradient } from "expo-linear-gradient";
 import Cast from "../components/Cast";
-import MovieList from '../components/MovieList'
+import MovieList from "../components/MovieList";
+import { fetchMovieCredits, fetchMovieDetails, image500 } from "../api/moviedb";
+import Loading from "../components/Loading";
 
 var { width, height } = Dimensions.get("window");
 
@@ -23,16 +25,30 @@ const ios = Platform.OS == "ios";
 
 const topMargin = ios ? "" : "mt-3";
 const MovieScreen = () => {
-    let moviName = "Ant-Man and the Wasp: Quantumania";
     const { params: item } = useRoute();
-    const [cast, setCast] = useState([1,2,3,4,5])
-    const [similarMovies, setSimilarMovies] = useState([1,2,3,4,5])
+    const [cast, setCast] = useState([]);
+    const [similarMovies, setSimilarMovies] = useState([1, 2, 3, 4, 5]);
+    const [movie, setMovie] = useState({});
 
     const navigation = useNavigation();
 
     const [isFavourite, toggleFavourite] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const getMovieDetails = async (id) => {
+        const data = await fetchMovieDetails(id);
+        if (data) setMovie(data);
+        setLoading(false);
+    };
+    const getMovieCredits = async (id) => {
+        const data = await fetchMovieCredits(id);
+        if (data && data.cast) setCast(data.cast);
+    };
+    useEffect(() => {
+        setLoading(true);
+        getMovieDetails(item.id);
+        getMovieCredits(item.id);
+    }, [item]);
 
-    useEffect(() => {}, [item]);
     return (
         <ScrollView
             contentContainerStyle={{ paddingBottom: 20 }}
@@ -69,10 +85,11 @@ const MovieScreen = () => {
                 <View>
                     {/* Imgae */}
                     <Image
-                        source={require("../assets/images/moviePoster2.png")}
+                        // source={require("../assets/images/moviePoster2.png")}
+                        source={{ uri: image500(movie?.poster_path) }}
                         style={{ width, height: height * 0.55 }}
                     />
-         
+
                     <LinearGradient
                         colors={[
                             "transparent",
@@ -85,34 +102,58 @@ const MovieScreen = () => {
                         className="absolute bottom-0"
                     />
                 </View>
-
             </View>
             {/* body */}
-            <View style={{marginTop:-(height*0.09)}} className="space-y-3">
-                {/* title */}
-                <Text className="text-white font-bold text-3xl text-center tracking-wider">{moviName}</Text>
+            {loading ? (
+                <Loading />
+            ) : (
+                <>
+                    <View
+                        style={{ marginTop: -(height * 0.09) }}
+                        className="space-y-3"
+                    >
+                        {/* title */}
+                        <Text className="text-white font-bold text-3xl text-center tracking-wider">
+                            {movie?.title}
+                        </Text>
 
-                {/* status, relese, runtime */}
-                <Text className="text-center text-neutral-400 font-semibold text-base">Released - 2020 - 170 min</Text>
+                        {/* status, relese, runtime */}
+                        {movie?.id ? (
+                            <Text className="text-center text-neutral-400 font-semibold text-base">
+                                {movie?.status} -{" "}
+                                {movie?.release_date.split("-")[0]} -{" "}
+                                {movie?.runtime}min
+                            </Text>
+                        ) : null}
 
-                {/* genres */}
-                <View className="flex-row items-center justify-center mx-4 space-x-2">
-                    <Text className="text-center text-neutral-400 text-base font-semibold">Action -</Text>
-                    <Text className="text-center text-neutral-400 text-base font-semibold">Thrill -</Text>
-                    <Text className="text-center text-neutral-400 text-base font-semibold">Comedy</Text>
-                </View>
+                        {/* genres */}
+                        <View className="flex-row items-center justify-center mx-4 space-x-2">
+                            {movie?.genres?.map((genre, index) => {
+                                let showDot = index + 1 != movie.genres.length;
+                                return (
+                                    <Text
+                                        key={index}
+                                        className="text-center text-neutral-400 text-base font-semibold"
+                                    >
+                                        {genre?.name} {showDot ? "-" : null}
+                                    </Text>
+                                );
+                            })}
+                        </View>
 
-                {/* decription */}
-                <Text className="text-neutral-400 mx-4 tracking-wide">
-                    Supper-Hero partners Scott Lang anf Hope van Dyen, along with Hope's parent Janet partners Scott Lang anf Hope van Dyen, along with Hope's parent Janet partners Scott Lang anf Hope van Dyen, along with Hope's parent Janet partners Scott Lang anf Hope van Dyen, along with Hope's parent Janet
-                </Text>
-            </View>
+                        {/* decription */}
+                        <Text className="text-neutral-400 mx-4 tracking-wide">
+                            {movie?.overview}
+                        </Text>
+                    </View>
 
-            {/* cast */}
-            <Cast cast={cast} navigation={navigation}/>
+                    {/* cast */}
+                    <Cast cast={cast} navigation={navigation} />
 
-            {/* similar movie */}
-            <MovieList title="Similar Movies" hideSeeAll={true} data={similarMovies}/>
+                    {/* similar movie */}
+                    {/* <MovieList title="Similar Movies" hideSeeAll={true} data={similarMovies}/> */}
+                </>
+            )}
         </ScrollView>
     );
 };
